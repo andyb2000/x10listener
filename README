@@ -1,0 +1,58 @@
+x10_listener
+(C)2015 Andy Brown https://github.com/andyb2000
+
+-----------------------------------------------------------------------------------------------------------
+This is a small script I wrote that will emulate the TIP10RF X10 remote device.
+It's a small piece of hardware manufactured by Marmitek/Haibrain. This hardware device plugs
+into your home router and will receive commands from the Android and IOS application and send X10
+commands to your devices.
+
+This small PHP script will listen on the port you set (Match this in the application) and
+then send HEYU commands on your linux machine
+
+requirements:
+	HEYU on your linux server with compatible X10 transmitter (CM11a, etc)
+	PHP-cli installed
+	Android or IOS mobile phone app (Free to download, search for TIP10RF)
+
+Configure the app using the 3 lines near the top, you set your server address (the linux machine HEYU is on)
+The listen_port, match this to the port in your mobile application
+The heyu path, so we can call heyu direct from this script.
+
+This script will only work with A1 to A4 codes as I've not programmed any more in. Please get in touch
+if you need more!
+
+I would recommend to run this script under a user and not ROOT. If under a user, ensure they
+have relevant permissions to allow heyu to operate and access the serial or usb port.
+
+// 00---------------------------------------------------------------------------------------00
+
+The principle of operation is based around the messages we receive via the TCP port we listen on.
+By sniffing these we can find the commands used by the application and simulate the same.
+
+Firstly, the bit that I didn't work out, I couldn't see how the application 'found' the unit, it must
+do a multicast or similar, but I didn't bother working this out as the application can be forced to
+a specific IP and port.
+
+There are a couple of standard messages, the rest can be captured and repeated.
+The first message we receive is
+   000000000000000000000000FEA8
+
+This appears to be a HELLO type message from the client. I've not figured out if we need to respond
+to these, but so long as our TCP port receives them, the green light in the top of the app lights up.
+I just send a carriage return back to the client, that seems to keep it happy.
+
+Then we have our control codes coming back, these aren't exhaustive, I just logged a few that
+I needed, but they should be easily calculated.
+
+   0000000000000000000060000036
+	A1 on (non dimmable)
+
+   0000000000000000000060200016
+	A1 off (non dimmable)
+
+   0000000000000000000060100026
+	A2 on (non dimmable)
+   0000000000000000000060300006
+	A2 off (non dimmable)
+
